@@ -25,39 +25,51 @@ import streamlit as st
 def fetch_trade_data(
     reporter,
     partner,
-    year,
+    years,
     flow
 ):
 
-    data = comtradeapicall.previewFinalData(
-        typeCode="C",
-        freqCode="A",
-        clCode="HS",
+    all_years = []
 
-        period=str(year),
+    for year in years:
 
-        reporterCode=reporter,
-        partnerCode=partner,
-        partner2Code=None,
+        data = comtradeapicall.previewFinalData(
+            typeCode="C",
+            freqCode="A",
+            clCode="HS",
 
-        cmdCode="TOTAL",
+            period=str(year),
 
-        flowCode=flow,
+            reporterCode=reporter,
+            partnerCode=partner,
+            partner2Code=None,
+            cmdCode="TOTAL",
 
-        customsCode=None,
-        motCode=None,
+            flowCode=flow,
 
-        maxRecords=500,
+            customsCode=None,
+            motCode=None,
 
-        format_output="JSON",
+            maxRecords=500,
 
-        aggregateBy=None,
-        breakdownMode="classic",
+            format_output="JSON",
 
-        countOnly=None,
-        includeDesc=True
-    )
+            aggregateBy=None,
+            breakdownMode="classic",
 
-    df = pd.DataFrame(data)
+            countOnly=None,
+            includeDesc=True
+        )
+        df_year = pd.DataFrame(data)
 
-    return df
+        if not df_year.empty:
+            all_years.append(df_year)
+
+
+    if all_years:
+        return pd.concat(
+            all_years,
+            ignore_index=True
+        )
+
+    return pd.DataFrame()
