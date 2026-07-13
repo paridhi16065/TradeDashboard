@@ -88,7 +88,7 @@ trade_flow = st.sidebar.radio(
 # Load data
 # -------------------
 
-if st.button("Load Trade Data"):
+with st.spinner("Fetching Trade Data"):
 
     df = fetch_trade_data(
     reporter=countries[country],
@@ -96,6 +96,7 @@ if st.button("Load Trade Data"):
     years=years,
     flow=flows[trade_flow]
     )
+
 
     st.write("Columns returned:")
     st.write(df.columns)
@@ -172,8 +173,8 @@ if st.button("Load Trade Data"):
     st.dataframe(df)
 
 
-else:
+# else:
 
-    st.info(
-        "Select filters and click Load Trade Data."
-    )
+#     st.info(
+#         "Select filters and click Load Trade Data."
+#     )

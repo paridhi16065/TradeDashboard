@@ -43,7 +43,7 @@ def fetch_trade_data(
             reporterCode=reporter,
             partnerCode=partner,
             partner2Code=None,
-            cmdCode="TOTAL",
+            cmdCode="AG6",
 
             flowCode=flow,
 

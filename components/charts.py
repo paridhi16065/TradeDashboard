@@ -3,11 +3,23 @@ import plotly.express as px
 
 def commodity_bar_chart(df):
 
+    import plotly.express as px
+
+    commodities = (
+        df.groupby("cmdDesc")["primaryValue"]
+        .sum()
+        .sort_values(ascending=False)
+        .head(10)
+        .reset_index()
+    )
+
+
     fig = px.bar(
-        df,
-        x="cmdDesc",
-        y="primaryValue",
-        title="Trade by Commodity"
+        commodities,
+        x="primaryValue",
+        y="cmdDesc",
+        orientation="h",
+        title="Top 10 Traded Commodities"
     )
 
     return fig
