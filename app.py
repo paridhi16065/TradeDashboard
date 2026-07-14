@@ -1,5 +1,7 @@
 import streamlit as st
 
+from utils.formatters import format_currency
+
 from services.comtrade import fetch_trade_data
 from components.charts import (
     commodity_bar_chart,
@@ -23,6 +25,10 @@ st.write(
     """
     Explore trade flows, partners, and commodities using UN Comtrade data.
     """
+)
+
+st.caption(
+    "Source: UN Comtrade API • Annual merchandise trade statistics"
 )
 
 
@@ -89,92 +95,72 @@ trade_flow = st.sidebar.radio(
 # -------------------
 
 with st.spinner("Fetching Trade Data"):
-
     df = fetch_trade_data(
-    reporter=countries[country],
-    partner=partners[partner],
-    years=years,
-    flow=flows[trade_flow]
+        reporter=countries[country],
+        partner=partners[partner],
+        years=years,
+        flow=flows[trade_flow]
     )
 
+st.info(
+    f"""
+    **Reporter:** {country}
 
-    st.write("Columns returned:")
-    st.write(df.columns)
+    **Partner:** {partner}
 
-    st.write("Preview:")
+    **Trade Flow:** {trade_flow}
+
+    **Years:** {year_range[0]}–{year_range[1]}
+    """
+)
+
+if df.empty:
+    st.warning("No trade data found for this selection.")
+
+
+tab_data, tab_analysis = st.tabs(["Data", "Analysis"])
+
+with tab_data:
+    st.subheader("Preview")
     st.dataframe(df.head())
-    # -------------------
-    # KPI Cards
-    # -------------------
-
-    col1, col2, col3 = st.columns(3)
-
-    if df.empty:
-
-        st.warning(
-        "No trade data found for this selection."
-        )
-
-        st.stop()
-
-    total_trade = df["primaryValue"].sum()
-
-
-    col1.metric(
-        "Total Trade",
-        f"${total_trade:,.0f}"
-    )
-
-
-    col2.metric(
-        "Records",
-        len(df)
-    )
-
-
-    col3.metric(
-        "Reporter",
-        country
-    )
-
-
-    # -------------------
-    # Chart
-    # -------------------
-
-    st.subheader("Trade Trend")
-
-    trend_fig = trade_trend_chart(df)
-
-    st.plotly_chart(
-        trend_fig,
-        use_container_width=True
-    )
-
-    st.subheader("Trade by Commodity")
-
-
-    fig = commodity_bar_chart(df)
-
-
-    st.plotly_chart(
-        fig,
-        use_container_width=True
-    )
-
-
-    # -------------------
-    # Raw Data
-    # -------------------
 
     st.subheader("Raw Data")
-
-
     st.dataframe(df)
 
+with tab_analysis:
+    if df.empty:
+        st.warning("No trade data found for this selection.")
+    else:
+        col1, col2, col3 = st.columns(3)
 
-# else:
+        total_trade = df["primaryValue"].sum()
 
-#     st.info(
-#         "Select filters and click Load Trade Data."
-#     )
+        col1.metric(
+            "Total Trade",
+            format_currency(total_trade)
+        )
+
+        col2.metric(
+            "Records",
+            len(df)
+        )
+
+        col3.metric(
+            "Reporter",
+            country
+        )
+
+        st.subheader("Trade Trend")
+
+        trend_fig = trade_trend_chart(df)
+        st.plotly_chart(
+            trend_fig,
+            use_container_width=True
+        )
+
+        st.subheader("Trade by Commodity")
+        fig = commodity_bar_chart(df)
+        st.plotly_chart(
+            fig,
+            use_container_width=True
+        )
