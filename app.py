@@ -104,11 +104,11 @@ with st.spinner(spinner_msg):
         flow=flows[trade_flow]
     )
 
-    # Prefetch both flows (all partners) to speed up balance calculation later
+    # Prefetch both flows to speed up balance calculation later
     try:
         exports_all = comtrade.fetch_trade_data(
             reporter=countries[country],
-            partner=0,
+            partner=partners[partner],
             years=years,
             flow=flows["Exports"]
         )
@@ -118,7 +118,7 @@ with st.spinner(spinner_msg):
     try:
         imports_all = comtrade.fetch_trade_data(
             reporter=countries[country],
-            partner=0,
+            partner=partners[partner],
             years=years,
             flow=flows["Imports"]
         )
@@ -161,10 +161,9 @@ with tab_analysis:
 
         total_trade = df["primaryValue"].sum()
 
-        # Use prefetched totals to avoid extra network calls
         trade_balance = exports_total - imports_total
-
-        total_label = "Total Exports" if trade_flow == "Exports" else "Total Imports"
+        print(trade_balance)
+        total_label = f"Total {trade_flow}"
 
         col1.metric(
             total_label,
@@ -184,6 +183,22 @@ with tab_analysis:
         col4.metric(
             "Trade Balance",
             format_currency(trade_balance)
+        )
+
+        # Color-coded label for surplus/deficit
+        if trade_balance > 0:
+            bal_label = "Surplus"
+            bal_color = "#138000"
+        elif trade_balance < 0:
+            bal_label = "Deficit"
+            bal_color = "#d62828"
+        else:
+            bal_label = "Balanced"
+            bal_color = "#6c757d"
+
+        col4.markdown(
+            f'<div style="display:inline-block;padding:6px 10px;border-radius:8px;color:#fff;background:{bal_color};font-weight:600">{bal_label}</div>',
+            unsafe_allow_html=True,
         )
 
         st.subheader( f"{trade_flow} Trend")
