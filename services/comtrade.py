@@ -50,7 +50,7 @@ def fetch_trade_data(
             customsCode=None,
             motCode=None,
 
-            maxRecords=500,
+            maxRecords=5000,
 
             format_output="JSON",
 
@@ -73,3 +73,38 @@ def fetch_trade_data(
         )
 
     return pd.DataFrame()
+
+def fetch_partner_trade_data(
+    reporter,
+    years,
+    flow,
+    partners
+):
+    results = []
+
+    for partner_name, partner_code in partners.items():
+
+        # Skip World if you don't want it in the ranking
+        if partner_name == "World":
+            continue
+
+        df = fetch_trade_data(
+            reporter=reporter,
+            partner=partner_code,
+            years=years,
+            flow=flow
+        )
+
+        if df.empty:
+            continue
+
+        results.append({
+            "Partner": partner_name,
+            "TradeValue": df["primaryValue"].sum()
+        })
+
+    return (
+        pd.DataFrame(results)
+        .sort_values("TradeValue", ascending=False)
+        .reset_index(drop=True)
+    )

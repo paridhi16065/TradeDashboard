@@ -6,7 +6,8 @@ import pandas as pd
 import services.comtrade as comtrade
 from components.charts import (
     commodity_bar_chart,
-    trade_trend_chart
+    trade_trend_chart,
+    partner_bar_chart
 )
 
 
@@ -50,7 +51,22 @@ countries = {
 partners = {
     "World": 0,
     "China": 156,
-    "United States": 842
+    "United States": 842,
+    "United Arab Emirates": 784,
+    "Singapore": 702,
+    "Germany": 276,
+    "United Kingdom": 826,
+    "Japan": 392,
+    "Netherlands": 528,
+    "Bangladesh": 50,
+    "Saudi Arabia": 682,
+    "Australia": 36,
+    "France": 250,
+    "Italy": 380,
+    "South Korea": 410,
+    "Malaysia": 458,
+    "Brazil": 76,
+    "Vietnam": 704
 }
 
 
@@ -102,6 +118,13 @@ with st.spinner(spinner_msg):
         partner=partners[partner],
         years=years,
         flow=flows[trade_flow]
+    )
+
+    partner_df = comtrade.fetch_partner_trade_data(
+        reporter=countries[country],
+        years=list(range(year_range[0], year_range[1] + 1)),
+        flow=flows[trade_flow],
+        partners=partners
     )
 
     # Prefetch both flows to speed up balance calculation later
@@ -215,3 +238,20 @@ with tab_analysis:
             fig,
             use_container_width=True
         )
+
+        st.subheader(
+        "Top Export Destinations"
+        if trade_flow == "Exports"
+        else "Top Import Sources"
+        )
+
+        fig = partner_bar_chart(partner_df)
+
+        st.plotly_chart(
+        fig,
+        use_container_width=True
+        )
+
+
+        
+

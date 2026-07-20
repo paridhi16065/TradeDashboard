@@ -3,7 +3,6 @@ import plotly.express as px
 
 def commodity_bar_chart(df):
 
-    import plotly.express as px
 
     commodities = (
         df.groupby("cmdDesc")["primaryValue"]
@@ -20,6 +19,22 @@ def commodity_bar_chart(df):
         y="cmdDesc",
         orientation="h",
         title="Top 10 Traded Commodities"
+    )
+
+    return fig
+
+def partner_bar_chart(df):
+
+    fig = px.bar(
+        df,
+        x="TradeValue",
+        y="Partner",
+        orientation="h",
+        title="Top Trade Partners"
+    )
+
+    fig.update_layout(
+        yaxis={"categoryorder": "total ascending"}
     )
 
     return fig
