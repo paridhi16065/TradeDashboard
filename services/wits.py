@@ -115,7 +115,7 @@ def fetch_trade_data(reporter, partner, years, flow):
         try:
             resp = requests.get(url, timeout=30)
             resp.raise_for_status()
-            df_year = _parse_wits_xml(resp.text)
+            df_year = _parse_wits_xml(resp.content)
         except (requests.RequestException, ET.ParseError):
             df_year = pd.DataFrame()
         if not df_year.empty:
@@ -133,14 +133,22 @@ def get_country_names():
     url = "https://wits.worldbank.org/API/V1/wits/datasource/tradestats-trade/country/ALL"
     _throttle()
     resp = requests.get(url, timeout=30)
-    root = ET.fromstring(resp.text)
+    root = ET.fromstring(resp.content)
     names = {}
     for c in root.iter():
         if _strip_ns(c.tag) == "country":
-            iso3 = c.attrib.get("iso3Code") or c.attrib.get("countrycode")
+            is_group = c.attrib.get("isgroup", "").lower() == "yes"
+            if is_group:
+                continue   # skip regional/group codes like North America, EU, etc.
+            iso3, name = None, None
             for child in c:
-                if _strip_ns(child.tag) == "name":
-                    names[iso3] = child.text
+                ctag = _strip_ns(child.tag)
+                if ctag == "iso3Code":
+                    iso3 = child.text
+                elif ctag == "name":
+                    name = child.text
+            if iso3:
+                names[iso3] = name
     return names
 
 def fetch_all_partners(reporter, year, flow):
@@ -153,7 +161,7 @@ def fetch_all_partners(reporter, year, flow):
     try:
         resp = requests.get(url, timeout=30)
         resp.raise_for_status()
-        df = _parse_wits_xml(resp.text)
+        df = _parse_wits_xml(resp.content)
     except (requests.RequestException, ET.ParseError):
         df = pd.DataFrame()
     if df.empty:

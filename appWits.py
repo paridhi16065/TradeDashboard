@@ -93,11 +93,21 @@ with st.spinner(spinner_msg):
     totals_df = comtrade.get_yearly_totals(df)
     sector_df = comtrade.get_sector_breakdown(df)
 
-    partner_df = comtrade.fetch_partner_trade_data(
-        reporter=countries[country],
-        years=years,
-        flow=flows[trade_flow],
-        partners=partners
+    raw_partner_df = comtrade.fetch_all_partners(
+    reporter=countries[country],
+    year=year_range[1],
+    flow=flows[trade_flow]
+    )
+    country_names = comtrade.get_country_names()
+
+    partner_df =  raw_partner_df[raw_partner_df["partnerCode"].isin(country_names.keys())].copy()
+    partner_df["Partner"] = partner_df["partnerCode"].map(country_names).fillna(partner_df["partnerCode"])
+    partner_df = partner_df.rename(columns={"primaryValue": "TradeValue"})
+    partner_df = (
+    partner_df[["Partner", "TradeValue"]]
+    .sort_values("TradeValue", ascending=False)
+    .head(10)
+    .reset_index(drop=True)
     )
 
     # Prefetch both flows for the trade balance calculation
