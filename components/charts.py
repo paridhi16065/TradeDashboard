@@ -58,3 +58,19 @@ def trade_trend_chart(df):
     )
 
     return fig
+
+def dgcis_commodity_chart(df):
+    fig = px.bar(df, x="ValueUSD", y="Commodity", orientation="h", title="Top 10 Commodities")
+    fig.update_layout(yaxis={"categoryorder": "total ascending"})
+    return fig
+
+
+def dgcis_country_chart(df):
+    fig = px.bar(df, x="ValueUSD", y="Country", orientation="h", title="Top 10 Countries")
+    fig.update_layout(yaxis={"categoryorder": "total ascending"})
+    return fig
+
+
+def dgcis_trend_chart(fy_totals_df, flow_label):
+    fig = px.line(fy_totals_df, x="financial_year", y="ValueUSD", markers=True, title=f"{flow_label} by Financial Year")
+    return fig
